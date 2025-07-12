@@ -21,16 +21,16 @@ export const theme: CustomThemeConfig = {
         "--on-surface": "255 255 255",
         // =~= Theme Colors  =~=
         // primary | #a940bf
-        "--color-primary-50": "242 226 245", // #f2e2f5
-        "--color-primary-100": "238 217 242", // #eed9f2
-        "--color-primary-200": "234 207 239", // #eacfef
-        "--color-primary-300": "221 179 229", // #ddb3e5
-        "--color-primary-400": "195 121 210", // #c379d2
-        "--color-primary-500": "169 64 191", // #a940bf
-        "--color-primary-600": "152 58 172", // #983aac
-        "--color-primary-700": "127 48 143", // #7f308f
-        "--color-primary-800": "101 38 115", // #652673
-        "--color-primary-900": "83 31 94", // #531f5e
+        "--color-primary-50":  "214 226 238",
+        "--color-primary-100": "194 212 230",
+        "--color-primary-200": "173 198 222",
+        "--color-primary-300": "133 169 205",
+        "--color-primary-400": "92 141 189",
+        "--color-primary-500": "51 112 172",   // #3370AC
+        "--color-primary-600": "46 101 155",
+        "--color-primary-700": "38 84 129",
+        "--color-primary-800": "28 62  95",
+        "--color-primary-900": "20 45  69",
         // secondary | #128ca1
         "--color-secondary-50": "219 238 241", // #dbeef1
         "--color-secondary-100": "208 232 236", // #d0e8ec
@@ -86,16 +86,17 @@ export const theme: CustomThemeConfig = {
         "--color-error-700": "151 27 27", // #971b1b
         "--color-error-800": "121 22 22", // #791616
         "--color-error-900": "98 18 18", // #621212
-        // surface | #423654
-        "--color-surface-50": "227 225 229", // #e3e1e5
-        "--color-surface-100": "217 215 221", // #d9d7dd
-        "--color-surface-200": "208 205 212", // #d0cdd4
-        "--color-surface-300": "179 175 187", // #b3afbb
-        "--color-surface-400": "123 114 135", // #7b7287
-        "--color-surface-500": "66 54 84", // #423654
-        "--color-surface-600": "59 49 76", // #3b314c
-        "--color-surface-700": "50 41 63", // #32293f
-        "--color-surface-800": "40 32 50", // #282032
-        "--color-surface-900": "32 26 41" // #201a29
+        // ===== surface – white / light-grey =====
+        /* surface | greys */
+        "--color-surface-50":  "255 255 255",  // pure white
+        "--color-surface-100": "245 245 245",
+        "--color-surface-200": "235 235 235",
+        "--color-surface-300": "210 210 210",
+        "--color-surface-400": "150 150 150",
+        "--color-surface-500": "100 100 100",
+        "--color-surface-600": "80  80  80",
+        "--color-surface-700": "60  60  60",
+        "--color-surface-800": "40  40  40",
+        "--color-surface-900": "25  25  25",
     }
 };
