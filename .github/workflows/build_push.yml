@@ -9,6 +9,7 @@ on:
 
 jobs:
   build_and_push_web:
+    environment: env
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
