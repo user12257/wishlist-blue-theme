@@ -1,5 +1,5 @@
 import { env } from "$env/dynamic/private";
-import { defaultLocale, getClosestAvailableLocaleFromHeader } from "$lib/i18n";
+import { getClosestAvailableLocaleFromHeader, getClosestAvailablePreferredLanguage, type Lang } from "$lib/i18n";
 import {
     deleteSessionTokenCookie,
     sessionCookieName,
@@ -10,22 +10,23 @@ import { logger } from "$lib/server/logger";
 import type { Handle, HandleServerError } from "@sveltejs/kit";
 
 export const handle: Handle = async ({ event, resolve }) => {
-    const lang = getClosestAvailableLocaleFromHeader(event.request.headers.get("accept-language"));
+    let lang = getClosestAvailableLocaleFromHeader(event.request.headers.get("accept-language"));
 
     const sessionToken = event.cookies.get(sessionCookieName);
     if (!sessionToken) {
         event.locals.user = null;
         event.locals.session = null;
         event.locals.isProxyUser = false;
-        event.locals.locale = lang || defaultLocale;
+        event.locals.locale = lang.code;
         return resolve(event, {
             transformPageChunk({ html }) {
-                return html.replace("%lang%", event.locals.locale);
+                return transformForLang(html, lang);
             }
         });
     }
 
     const { session, user } = await validateSessionToken(sessionToken);
+    lang = getClosestAvailablePreferredLanguage(user?.preferredLanguage);
     if (session !== null) {
         setSessionTokenCookie(event.cookies, sessionToken, session.expiresAt);
     } else {
@@ -40,14 +41,18 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.isProxyUser = isProxyUser;
     event.locals.user = user;
     event.locals.session = session;
-    event.locals.locale = lang || defaultLocale;
+    event.locals.locale = lang.code;
 
     return resolve(event, {
         transformPageChunk({ html }) {
-            return html.replace("%lang%", event.locals.locale);
+            return transformForLang(html, lang);
         }
     });
 };
+
+function transformForLang(html: string, lang: Lang) {
+    return html.replace("%lang%", lang.code).replace("%dir%", lang.rtl ? "rtl" : "ltr");
+}
 
 export const handleError: HandleServerError = async ({ error: err, event, status, message }) => {
     logger.error(

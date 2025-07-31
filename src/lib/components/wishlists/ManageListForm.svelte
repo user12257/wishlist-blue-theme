@@ -7,8 +7,9 @@
     import type { List, User } from "@prisma/client";
     import { getModalStore } from "@skeletonlabs/skeleton";
     import { getFormatter } from "$lib/i18n";
+    import MarkdownEditor from "../MarkdownEditor.svelte";
 
-    interface ListProps extends Partial<Pick<List, "id" | "icon" | "iconColor" | "name" | "public">> {
+    interface ListProps extends Partial<Pick<List, "id" | "icon" | "iconColor" | "name" | "public" | "description">> {
         owner: Pick<User, "name" | "username" | "picture">;
     }
 
@@ -93,7 +94,7 @@
             </label>
 
             {#if allowsPublicLists || listMode === "registry"}
-                <label class="unstyled mt-8 flex flex-row items-center space-x-2" for="public">
+                <label class="unstyled mt-8 flex flex-row items-center gap-x-2" for="public">
                     <input
                         id="public"
                         name="public"
@@ -138,6 +139,18 @@
         </div>
 
         <div class="col-span-full">
+            <label>
+                <span>{$t("general.description")}</span>
+                <MarkdownEditor
+                    id="description"
+                    name="description"
+                    placeholder={$t("general.add-a-description")}
+                    value={list.description}
+                />
+            </label>
+        </div>
+
+        <div class="col-span-full">
             <div class="flex flex-col space-y-2">
                 <span>{$t("wishes.preview")}</span>
                 <ListCard hideCount {list} preventNavigate />
@@ -149,7 +162,7 @@
         <button class="variant-ghost-secondary btn w-min" onclick={() => history.back()} type="button">
             {$t("general.cancel")}
         </button>
-        <div class="flex flex-row space-x-4">
+        <div class="flex flex-row gap-x-4">
             {#if editing}
                 <button class="variant-filled-error btn w-min" formaction="?/delete" type="submit">
                     {$t("wishes.delete")}

@@ -61,7 +61,7 @@ export const settingSchema = z.object({
     passwordStrength: z.coerce.number().min(-1).max(5).default(2),
     disablePasswordLogin: z.coerce.boolean().default(false),
     defaultGroup: z.string().optional(),
-    enableDefaultListCreation: z.coerce.boolean().default(true),
+    enableDefaultListCreation: z.coerce.boolean().default(false),
     allowPublicLists: z.coerce.boolean().default(false),
     enableOIDC: z.coerce.boolean().default(false),
     oidcDiscoveryUrl: z.string().optional(),
@@ -81,7 +81,8 @@ export const getListPropertiesSchema = () => {
         name: z.string().trim().nullable(),
         icon: z.string().trim().nullable(),
         iconColor: z.string().trim().nullable(),
-        public: z.coerce.boolean().default(false)
+        public: z.coerce.boolean().default(false),
+        description: z.string().max(10000).nullable()
     });
 };
 
@@ -105,7 +106,7 @@ export const listItemClaimUpdateSchema = z.object({
     quantity: z.number().optional()
 });
 
-export const getItemFormSchema = async () => {
+export const getItemCreateSchema = async () => {
     const $t = await getFormatter();
 
     return z.object({
@@ -130,8 +131,19 @@ export const getItemFormSchema = async () => {
     });
 };
 
+export const getItemUpdateSchema = async () => {
+    return getItemCreateSchema().then((itemCreateSchema) =>
+        itemCreateSchema.merge(
+            z.object({
+                url: z.string().nullish().default(null),
+                imageUrl: z.string().nullish().default(null),
+                note: z.string().nullish().default(null)
+            })
+        )
+    );
+};
+
 export const extractFormData = (formData: FormData) => {
-    console.log(formData);
     const data = [...formData.entries().filter(([_k, v]) => v.toString())].reduce<
         Record<string, FormDataEntryValue | FormDataEntryValue[]>
     >(
@@ -141,6 +153,5 @@ export const extractFormData = (formData: FormData) => {
         }),
         {}
     );
-    console.log(data);
     return data;
 };

@@ -3,7 +3,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { client } from "$lib/server/prisma";
 import { getConfig } from "$lib/server/config";
 import { getActiveMembership } from "$lib/server/group-membership";
-import { createImage } from "$lib/server/image-util";
+import { createImage, isValidImage } from "$lib/server/image-util";
 import { itemEmitter } from "$lib/server/events/emitters";
 import { getMinorUnits } from "$lib/price-formatter";
 import { getFormatter, getLocale } from "$lib/server/i18n";
@@ -11,7 +11,7 @@ import { getAvailableLists, getById } from "$lib/server/list";
 import { ItemEvent } from "$lib/events";
 import { getItemInclusions } from "$lib/server/items";
 import { requireLogin } from "$lib/server/auth";
-import { extractFormData, getItemFormSchema } from "$lib/server/validations";
+import { extractFormData, getItemCreateSchema } from "$lib/server/validations";
 
 export const load: PageServerLoad = async ({ params }) => {
     const user = requireLogin();
@@ -63,17 +63,21 @@ export const actions: Actions = {
             return fail(404, { success: false, message: $t("errors.user-not-in-group") });
         }
 
-        const itemFormSchema = await getItemFormSchema();
+        const itemFormSchema = await getItemCreateSchema();
         const form = await request.formData().then(extractFormData).then(itemFormSchema.safeParse);
 
         if (!form.success) {
-            console.log(form.error.format());
             form.error.format();
             return fail(400, { errors: form.error.format() });
         }
         const { url, imageUrl, image, name, price, currency, quantity, note, lists: listIds } = form.data;
 
-        const filename = await createImage(user.username, image);
+        let newImageFile: string | undefined | null;
+        if (image && isValidImage(image)) {
+            newImageFile = await createImage(name, image);
+        } else if (imageUrl) {
+            newImageFile = await createImage(name, imageUrl);
+        }
 
         let itemPriceId = null;
         if (price && currency) {
@@ -117,7 +121,7 @@ export const actions: Actions = {
                 name,
                 url,
                 note,
-                imageUrl: filename || imageUrl,
+                imageUrl: newImageFile,
                 createdById: user.id,
                 itemPriceId,
                 quantity,

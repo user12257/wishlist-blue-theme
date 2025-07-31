@@ -21,6 +21,7 @@
     import type { ItemOnListDTO } from "$lib/dtos/item-dto";
     import { ItemCreateHandler, ItemDeleteHandler, ItemsUpdateHandler, ItemUpdateHandler } from "$lib/events";
     import { getFormatter } from "$lib/i18n";
+    import Markdown from "$lib/components/Markdown.svelte";
 
     const { data }: PageProps = $props();
     const t = getFormatter();
@@ -39,6 +40,7 @@
             return $t("wishes.wishes-for", { values: { listOwner: data.list.owner.name } });
         }
     });
+    let hideDescription = $state(false);
 
     const flipDurationMs = 200;
     const listAPI = new ListAPI(data.list.id);
@@ -196,16 +198,30 @@
     };
 </script>
 
+{#if data.list.description}
+    <div class="w-full pb-4">
+        {#if !hideDescription}
+            <Markdown source={data.list.description} />
+        {/if}
+        <button
+            class="text-sm text-primary-700 dark:text-primary-500"
+            onclick={() => (hideDescription = !hideDescription)}
+        >
+            {hideDescription ? $t("wishes.show-description") : $t("wishes.hide-description")}
+        </button>
+    </div>
+{/if}
+
 <!-- chips -->
 <div class="flex flex-wrap justify-between pb-2">
-    <div class="flex flex-row flex-wrap space-x-4">
+    <div class="flex flex-row flex-wrap gap-x-4">
         {#if !data.list.owner.isMe}
             <ClaimFilterChip />
         {/if}
         <SortBy />
     </div>
     {#if data.list.owner.isMe}
-        <div class="flex flex-row flex-wrap space-x-4">
+        <div class="flex flex-row flex-wrap gap-x-4">
             <ReorderChip onFinalize={handleReorderFinalize} bind:reordering />
             <ManageListChip onclick={() => goto(`${new URL(page.url).pathname}/manage`)} />
         </div>
@@ -213,7 +229,7 @@
 </div>
 
 {#if data.list.owner.isMe && (data.listMode === "registry" || data.list.public)}
-    <div class="flex flex-row space-x-2 pb-4">
+    <div class="flex flex-row gap-x-2 pb-4">
         {#if publicListUrl}
             <div class="flex flex-row">
                 <TokenCopy btnStyle="btn-icon-sm" url={publicListUrl?.href}>{$t("wishes.public-url")}</TokenCopy>

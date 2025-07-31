@@ -3,14 +3,13 @@
     import type { Group, Item, ItemPrice, List, User } from "@prisma/client";
     import Backdrop from "$lib/components/Backdrop.svelte";
     import { env } from "$env/dynamic/public";
-    import { FileButton, getToastStore, Tab } from "@skeletonlabs/skeleton";
+    import { FileButton, getToastStore } from "@skeletonlabs/skeleton";
     import { getPriceValue } from "$lib/price-formatter";
     import CurrencyInput from "../CurrencyInput.svelte";
     import { onMount } from "svelte";
     import { getFormatter } from "$lib/i18n";
-    import TabGroup from "../Tab/TabGroup.svelte";
-    import Markdown from "../Markdown.svelte";
     import { goto } from "$app/navigation";
+    import MarkdownEditor from "../MarkdownEditor.svelte";
 
     interface ListProps extends Pick<List, "id" | "name" | "public"> {
         owner: Pick<User, "name">;
@@ -45,7 +44,6 @@
     let userCurrency: string = $derived(productData.itemPrice?.currency || defaultCurrency);
     let files: FileList | undefined = $state();
     let uploadedImageName: string | undefined = $derived(files?.item(0)?.name || $t("general.no-file-selected"));
-    let previewNote = $state(false);
     let quantity = $state(item.quantity || 1);
     let unlimited = $state(item.quantity === null);
 
@@ -79,7 +77,7 @@
         const urlRegex = /(https?):\/\/[^\s/$.?#].[^\s]*/;
         const matches = url.match(urlRegex);
         if (matches) {
-            return matches[0];
+            return encodeURIComponent(matches[0]);
         }
         return null;
     };
@@ -154,7 +152,7 @@
 <div class="grid grid-cols-7 gap-4">
     <label class="col-span-full" for="url">
         <span>{$t("wishes.item-url")}</span>
-        <div class="flex flex-row space-x-4">
+        <div class="flex flex-row gap-x-4">
             <div class="input-group grid-cols-[auto_1fr_auto]">
                 <div class="input-group-shim">
                     <iconify-icon icon="ion:link"></iconify-icon>
@@ -308,34 +306,7 @@
 
     <label class="col-span-full" for="note">
         <span>{$t("wishes.notes")}</span>
-        <div class="card p-2">
-            <TabGroup border="border-none">
-                <Tab name={$t("wishes.write")} value={false} bind:group={previewNote}>{$t("wishes.write")}</Tab>
-                <Tab name={$t("wishes.preview")} value={true} bind:group={previewNote}>{$t("wishes.preview")}</Tab>
-            </TabGroup>
-            <textarea
-                id="note"
-                name="note"
-                class="textarea"
-                class:hidden={previewNote}
-                placeholder={$t("wishes.note-placeholder")}
-                rows="4"
-                bind:value={productData.note}
-            ></textarea>
-            {#if previewNote}
-                {#if productData.note}
-                    <div
-                        class="variant-ringed-surface h-28 max-w-none overflow-scroll whitespace-pre-wrap px-3 py-2 rounded-container-token"
-                    >
-                        <Markdown source={productData.note} />
-                    </div>
-                {/if}
-            {/if}
-            <a class="variant-soft btn btn-sm mt-1" href="https://www.markdownguide.org/basic-syntax/" target="_blank">
-                <iconify-icon icon="ion:logo-markdown"></iconify-icon>
-                <span>{$t("wishes.supports-markdown")}</span>
-            </a>
-        </div>
+        <MarkdownEditor id="note" name="note" placeholder={$t("wishes.note-placeholder")} value={productData.note} />
     </label>
 
     <fieldset class="col-span-full flex flex-col space-y-2 md:col-span-5" class:hidden={lists.length <= 1}>
@@ -345,7 +316,7 @@
             class:input-error={form?.errors?.lists?._errors}
         >
             {#each lists as list (list.id)}
-                <label class="flex items-center space-x-2" for={list.id}>
+                <label class="flex items-center gap-x-2" for={list.id}>
                     <input
                         id={list.id}
                         name="lists"
@@ -355,7 +326,7 @@
                         type="checkbox"
                         value={list.id}
                     />
-                    <div class="!mt-0 flex flex-row space-x-2">
+                    <div class="!mt-0 flex flex-row gap-x-2">
                         <span>
                             {list.name}
                         </span>

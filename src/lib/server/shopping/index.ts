@@ -3,7 +3,7 @@
 import type { Check, CheckOptions, RuleSet } from "metascraper";
 import { toPriceFormat, getHostname } from "./helpers";
 import pkg from "@metascraper/helpers";
-const { memoizeOne, $jsonld } = pkg;
+const { memoizeOne, $jsonld, toRule, title, $filter } = pkg;
 
 interface ShoppingMetadata {
     brand: string;
@@ -61,6 +61,8 @@ const jsonLdLastBreadcrumb = memoizeOne(($: CheckOptions["htmlDom"]) => {
     return null;
 });
 
+const toTitle = toRule(title, { removeSeparator: false });
+
 /**
  * A set of rules we want to declare under the `metascraper-shopping` namespace.
  *
@@ -93,37 +95,17 @@ export default () => {
             },
             ({ htmlDom: $ }) => $('[property="og:title"]').attr("content")
         ],
+        title: [
+            toTitle(($) => $filter($, $("#productTitle"))),
+            toTitle(($) => $filter($, $("#btAsinTitle"))),
+            toTitle(($) => $filter($, $("h1.a-size-large"))),
+            toTitle(($) => $filter($, $("#item_name")))
+        ],
         url: [
-            ({ htmlDom: $, url }) => {
-                // dacor.com canonical points to homepage
-                if (url.includes("dacor.com")) {
-                    return url;
-                }
-                if (url.includes("bedrosian")) {
-                    return $('link[rel="canonical"]').attr("href");
-                }
-            }
+            ({ url }) => url // We'll trust the url the user provides as it may have additional product metadata
         ],
         image: [
-            ({ htmlDom: $ }) => $('a[data-fancybox="images"]').attr("href"), //fireclaytile.com
             ({ htmlDom: $ }) => $("div#imgTagWrapperId img").attr("src"), //amazon.com
-            ({ htmlDom: $, url }) => {
-                //arizontile
-                const relativeImage = $(".main-image-border.js-main-image").attr("data-zoom-image");
-                const fullUrl = new URL(url);
-                if (relativeImage) {
-                    return `${fullUrl.protocol}//${fullUrl.hostname}/${relativeImage}`;
-                }
-            },
-            ({ htmlDom: $, url }) => {
-                //semihandmade shopify
-                const relativeImage = $("img.lazy.lazyload.img-fluid").attr("data-src");
-                const fullUrl = new URL(url);
-                if (relativeImage) {
-                    return `${fullUrl.protocol}${relativeImage}`;
-                }
-            },
-
             ({ htmlDom: $ }) => $('[property="og:image:secure_url"]').attr("content"),
             ({ htmlDom: $, url }) => {
                 let content = $('[property="og:image"]').attr("content");
@@ -232,5 +214,6 @@ export default () => {
         hostname: [({ url }) => getHostname(url)],
         retailer: [({ htmlDom: $ }) => $('[property="og:site_name"]').attr("content")]
     };
+    rules.pkgName = "metascraper-shopping";
     return rules;
 };
