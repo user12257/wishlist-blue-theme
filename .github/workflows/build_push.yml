@@ -41,7 +41,7 @@ jobs:
         id: tags
         uses: docker/metadata-action@v5
         with:
-          images: cmintey/wishlist, ghcr.io/cmintey/wishlist
+          images: user12257/wishlist, ghcr.io/user12257/wishlist
           tags: |
             type=edge,branch=main
             type=ref,event=tag
