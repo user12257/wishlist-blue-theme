@@ -24,6 +24,9 @@ jobs:
           git remote add upstream https://github.com/user12257/wishlist-blue-theme.git
           git fetch upstream
           
-          git checkout master
-          git merge --no-edit upstream/master
-          git push origin master
+          # Check if there are changes to merge
+          if git merge --no-edit upstream/master; then
+            git push origin master
+          else
+            echo "No changes to merge."
+          fi
