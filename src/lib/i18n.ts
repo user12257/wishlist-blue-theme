@@ -20,11 +20,14 @@ export const defaultLang: Lang = {
     loader: () => import("../i18n/en.json")
 };
 
+// Endonyms: https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes
 export const supportedLangs: Lang[] = [
+    { name: "Danish", endonym: "Dansk", code: "da", loader: () => import("../i18n/da.json") },
     { name: "Dutch", endonym: "Nederlands", code: "nl", loader: () => import("../i18n/nl.json") },
     defaultLang,
     { name: "French", endonym: "Français", code: "fr", loader: () => import("../i18n/fr.json") },
     { name: "German", endonym: "Deutsch", code: "de", loader: () => import("../i18n/de.json") },
+    { name: "Greek", endonym: "Νέα Ελληνικά", code: "el", loader: () => import("../i18n/el.json") },
     { name: "Norwegian", endonym: "Norsk", code: "no", loader: () => import("../i18n/nb.json") },
     {
         name: "Norwegian Bokmål",
@@ -40,6 +43,7 @@ export const supportedLangs: Lang[] = [
         loader: () => import("../i18n/nb.json"),
         hidden: true
     },
+    { name: "Mongolian", endonym: "Монгол хэл", code: "mn", loader: () => import("../i18n/mn.json") },
     { name: "Persian", endonym: "فارسی", code: "fa", loader: () => import("../i18n/fa.json"), rtl: true },
     { name: "Polish", endonym: "Polski", code: "pl", loader: () => import("../i18n/pl.json") },
     { name: "Portuguese", endonym: "Português", code: "pt", loader: () => import("../i18n/pt.json") },

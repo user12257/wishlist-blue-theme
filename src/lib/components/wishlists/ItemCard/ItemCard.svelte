@@ -31,11 +31,14 @@
     import { errorToast } from "$lib/components/toasts";
     import { getFormatter } from "$lib/i18n";
     import Markdown from "$lib/components/Markdown.svelte";
+    import { resolve } from "$app/paths";
 
     interface Props {
         item: ItemOnListDTO;
         user?: PartialUser; // logged in user
         showClaimedName?: boolean;
+        requireClaimEmail?: boolean;
+        groupId?: string;
         showFor?: boolean;
         onPublicList?: boolean;
         reorderActions?: boolean;
@@ -45,8 +48,10 @@
 
     const {
         item,
+        groupId,
         user = undefined,
         showClaimedName = false,
+        requireClaimEmail = true,
         showFor = false,
         onPublicList = false,
         reorderActions = false,
@@ -71,7 +76,10 @@
                 new URL(item.imageUrl);
                 return item.imageUrl;
             } catch {
-                return `/api/assets/${item.imageUrl}`;
+                if (item.imageUrl.startsWith("/") || item.imageUrl.endsWith("/")) {
+                    return;
+                }
+                return resolve("/api/assets/[id]", { id: item.imageUrl });
             }
         }
     });
@@ -158,11 +166,10 @@
     const handleDelete = async () => modalStore.trigger(confirmDeleteModal);
     const handleApproval = async (approve = true) => modalStore.trigger(approvalModal(approve));
     const handleEdit = () => {
-        goto(`/items/${item.id}/edit?redirectTo=${page.url.pathname}`);
+        goto(resolve("/items/[itemId]/edit", { itemId: item.id.toString() }) + `?redirectTo=${page.url.pathname}`);
     };
 
     const doClaim = async (userId: string, quantity = 1, unclaim = false) => {
-        // TODO update API to allow claiming multiple
         const resp = await (unclaim ? claimAPI.unclaim() : listItemAPI.claim(userId, quantity));
 
         if (resp.ok) {
@@ -188,7 +195,9 @@
             meta: {
                 item,
                 userId: user?.id,
-                claimId: undefined
+                groupId: groupId,
+                claimId: undefined,
+                requireClaimEmail: requireClaimEmail
             },
             async response(r: boolean) {
                 if (r) drawerStore.close();
@@ -239,6 +248,7 @@
             showFor,
             user,
             showClaimedName,
+            requireClaimEmail,
             onPublicList,
             handleClaim,
             handleDelete,
