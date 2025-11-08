@@ -167,8 +167,8 @@ function logHttpAccess(logger: Logger, verb: string, path: string, status: numbe
     }
   );
     console.log(
-    "evt": {
-        {
+    {
+        evt: {
           Meta: {
             service: "http",
             log_type: "http_access-log",
