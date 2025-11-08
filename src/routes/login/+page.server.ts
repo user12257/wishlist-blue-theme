@@ -98,7 +98,9 @@ export const actions: Actions = {
         if (config.security.disablePasswordLogin) {
             error(400, "Password login is disabled");
         }
-
+        
+        const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for") ?? "";
+        
         const formData = Object.fromEntries(await request.formData());
         const loginData = (await getLoginSchema()).safeParse(formData);
         // check for empty values
@@ -107,7 +109,7 @@ export const actions: Actions = {
             logHttpAccess(logger, "POST", "/login", 401, ip, { username: loginData.data.username, reason: "invalid_credentials" });
             return fail(400, { error: true, errors: z.flattenError(loginData.error).fieldErrors });
         }
-        const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for") ?? "";
+       
 
         try {
             const maybeUser = await client.user.findUnique({
