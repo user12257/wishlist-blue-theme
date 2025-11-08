@@ -10,4 +10,4 @@ pnpm prisma db seed
 pnpm db:patch
 
 mkdir -p /logs
-exec "pnpm start" >> /logs/app.log 2>&1
+pnpm start >> /logs/app.log 2>&1
