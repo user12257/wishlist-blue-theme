@@ -103,10 +103,11 @@ export const actions: Actions = {
         const loginData = (await getLoginSchema()).safeParse(formData);
         // check for empty values
         if (!loginData.success) {
-            logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
+            logger.info("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
             logHttpAccess(logger, "POST", "/login", 401, ip, { username: loginData.data.username, reason: "invalid_credentials" });
             return fail(400, { error: true, errors: z.flattenError(loginData.error).fieldErrors });
         }
+        const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for") ?? "";
 
         try {
             const maybeUser = await client.user.findUnique({
@@ -120,14 +121,14 @@ export const actions: Actions = {
             });
 
             if (!maybeUser) {
-                logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
+                logger.info("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
                 logHttpAccess(logger, "POST", "/login", 401, ip, { username: loginData.data.username, reason: "invalid_credentials" });
                 return fail(400, { username: loginData.data.username, password: "", incorrect: true });
             }
 
             const isValid = await verifyPasswordHash(maybeUser.hashedPassword, loginData.data.password);
             if (!isValid) {
-                logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
+                logger.info("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
                 logHttpAccess(logger, "POST", "/login", 401, ip, { username: loginData.data.username, reason: "invalid_credentials" });
                 return fail(400, { username: loginData.data.username, password: "", incorrect: true });
             }
@@ -138,7 +139,7 @@ export const actions: Actions = {
             cookies.delete("direct", { path: "/" });
         } catch {
             // invalid credentials
-            logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
+            logger.info("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
             logHttpAccess(logger, "POST", "/login", 401, ip, { username: loginData.data.username, reason: "invalid_credentials" });
             return fail(400, { username: loginData.data.username, password: "", incorrect: true });
         }
