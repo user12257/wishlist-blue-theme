@@ -149,7 +149,7 @@ export const actions: Actions = {
 };
 
 function logHttpAccess(logger: Logger, verb: string, path: string, status: number, ip?: string, extra: Record<string, unknown> = {}) {
-  logger.info("http access: %s",JSON.stringify(
+  console.log(
     {
       Meta: {
         log_type: "http_access-log",
@@ -163,7 +163,7 @@ function logHttpAccess(logger: Logger, verb: string, path: string, status: numbe
         ip: ip || null
       },
       ...extra
-    })
+    }
   );
 }
 
