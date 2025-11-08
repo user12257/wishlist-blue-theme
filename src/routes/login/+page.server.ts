@@ -135,7 +135,7 @@ export const actions: Actions = {
             cookies.delete("direct", { path: "/" });
         } catch {
             // invalid credentials
-            logger.error("Failed login attempt from: %s"; request.ip);
+            logger.error("Failed login attempt from: %s", request.ip);
             return fail(400, { username: loginData.data.username, password: "", incorrect: true });
         }
     }
