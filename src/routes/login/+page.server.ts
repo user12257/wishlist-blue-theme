@@ -103,7 +103,7 @@ export const actions: Actions = {
         const loginData = (await getLoginSchema()).safeParse(formData);
         // check for empty values
         if (!loginData.success) {
-            logger.error("Failed login attempt from: %s", request.ip);
+            logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
             return fail(400, { error: true, errors: z.flattenError(loginData.error).fieldErrors });
         }
 
@@ -119,13 +119,13 @@ export const actions: Actions = {
             });
 
             if (!maybeUser) {
-                logger.error("Failed login attempt from: %s", request.ip);
+                logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
                 return fail(400, { username: loginData.data.username, password: "", incorrect: true });
             }
 
             const isValid = await verifyPasswordHash(maybeUser.hashedPassword, loginData.data.password);
             if (!isValid) {
-                logger.error("Failed login attempt from: %s", request.ip);
+                logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
                 return fail(400, { username: loginData.data.username, password: "", incorrect: true });
             }
 
@@ -135,7 +135,7 @@ export const actions: Actions = {
             cookies.delete("direct", { path: "/" });
         } catch {
             // invalid credentials
-            logger.error("Failed login attempt from: %s", request.ip);
+            logger.error("Failed login attempt from: %s",  request.headers.get('x-real-ip'));
             return fail(400, { username: loginData.data.username, password: "", incorrect: true });
         }
     }
