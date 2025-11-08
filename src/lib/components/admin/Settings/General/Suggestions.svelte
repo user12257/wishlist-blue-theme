@@ -12,16 +12,15 @@
     const t = getFormatter();
 </script>
 
-<SettingsGroup>
-    <h3 class="h3">{$t("admin.suggestions")}</h3>
+<SettingsGroup title={$t("admin.suggestions")}>
     <Setting>
         <label class="checkbox-label">
             <input
                 id="enableSuggestions"
                 name="enableSuggestions"
                 class="checkbox"
+                checked={config.suggestions.enable}
                 type="checkbox"
-                bind:checked={config.suggestions.enable}
             />
             <span>{$t("general.enable")}</span>
         </label>
@@ -67,7 +66,7 @@
                     id="suggestionMethod"
                     name="suggestionMethod"
                     class="select w-fit min-w-64"
-                    bind:value={config.suggestions.method}
+                    value={config.suggestions.method}
                 >
                     <option value="surprise">{$t("admin.suggestions-surprise-me")}</option>
                     <option value="auto-approval">{$t("admin.suggestions-auto-approve")}</option>

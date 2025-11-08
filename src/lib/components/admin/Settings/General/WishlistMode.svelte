@@ -14,8 +14,7 @@
     const t = getFormatter();
 </script>
 
-<SettingsGroup>
-    <h3 class="h3">{$t("admin.wishlist-mode")}</h3>
+<SettingsGroup title={$t("admin.wishlist-mode")}>
     <Setting>
         {@const disabled = groupUserCount > 1 || listCount > 1}
         <label class="flex flex-col" for="listMode">
@@ -42,7 +41,7 @@
                     </div>
                 {/snippet}
             </Tooltip>
-            <select id="listMode" name="listMode" class="select w-fit min-w-64" bind:value={config.listMode}>
+            <select id="listMode" name="listMode" class="select w-fit min-w-64" value={config.listMode}>
                 <option value="standard">{$t("admin.wishlist-mode-wishlist")}</option>
                 <option {disabled} value="registry">{$t("admin.wishlist-mode-registry")}</option>
             </select>

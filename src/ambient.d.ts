@@ -66,6 +66,8 @@ type OIDCConfig =
           providerName?: string | null;
           autoRedirect?: boolean | null;
           autoRegister?: boolean | null;
+          enableSync?: boolean | null;
+          disableEmailVerification?: boolean | null;
       }
     | {
           enable: true;
@@ -75,6 +77,8 @@ type OIDCConfig =
           providerName?: string | null;
           autoRedirect: boolean;
           autoRegister: boolean;
+          enableSync: boolean;
+          disableEmailVerification: boolean;
       };
 
 type Config = {
@@ -86,6 +90,7 @@ type Config = {
     smtp: SMTPConfig;
     claims: {
         showName: boolean;
+        showForOwner: boolean;
         requireEmail: boolean;
     };
     listMode: ListMode;

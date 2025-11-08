@@ -11,16 +11,15 @@
     const t = getFormatter();
 </script>
 
-<SettingsGroup>
-    <h3 class="h3">{$t("admin.claims")}</h3>
+<SettingsGroup title={$t("admin.claims")}>
     <Setting>
         <label class="checkbox-label">
             <input
                 id="claimsShowName"
                 name="claimsShowName"
                 class="checkbox"
+                checked={config.claims.showName}
                 type="checkbox"
-                bind:checked={config.claims.showName}
             />
             <span>{$t("admin.show-name")}</span>
         </label>
@@ -32,11 +31,27 @@
     <Setting>
         <label class="checkbox-label">
             <input
+                id="claimsShowForOwner"
+                name="claimsShowForOwner"
+                class="checkbox"
+                checked={config.claims.showForOwner}
+                type="checkbox"
+            />
+            <span>{$t("admin.show-for-list-owner")}</span>
+        </label>
+
+        {#snippet description()}
+            {$t("admin.show-for-list-owner-description")}
+        {/snippet}
+    </Setting>
+    <Setting>
+        <label class="checkbox-label">
+            <input
                 id="claimsRequireEmail"
                 name="claimsRequireEmail"
                 class="checkbox"
+                checked={config.claims.requireEmail}
                 type="checkbox"
-                bind:checked={config.claims.requireEmail}
             />
             <span>{$t("admin.claims-require-email")}</span>
         </label>

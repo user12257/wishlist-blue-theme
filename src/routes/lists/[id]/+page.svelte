@@ -14,7 +14,7 @@
     import { hash, hashItems, viewedItems } from "$lib/stores/viewed-items";
     import { ListAPI } from "$lib/api/lists";
     import TokenCopy from "$lib/components/TokenCopy.svelte";
-    import { dragHandleZone } from "svelte-dnd-action";
+    import { dragHandleZone, type DndZoneAttributes, type Item, type Options } from "svelte-dnd-action";
     import { getToastStore } from "@skeletonlabs/skeleton";
     import ReorderChip from "$lib/components/wishlists/chips/ReorderChip.svelte";
     import ManageListChip from "$lib/components/wishlists/chips/ManageListChip.svelte";
@@ -23,6 +23,7 @@
     import { getFormatter } from "$lib/i18n";
     import Markdown from "$lib/components/Markdown.svelte";
     import ListStatistics from "$lib/components/wishlists/ListStatistics.svelte";
+    import type { ActionReturn } from "svelte/action";
 
     const { data }: PageProps = $props();
     const t = getFormatter();
@@ -164,6 +165,21 @@
         publicListUrl = new URL(`/lists/${data.list.id}`, window.location as unknown as URL);
     };
 
+    // custom dnd action to remove the aria disabled flag
+    function dndZone<T extends Item>(
+        node: HTMLElement,
+        options: Options<T>
+    ): ActionReturn<Options<T>, DndZoneAttributes<T>> {
+        const zone = dragHandleZone(node, options);
+        node.setAttribute("aria-disabled", "false");
+        return {
+            update(newOptions) {
+                zone.update?.(newOptions);
+                node.setAttribute("aria-disabled", "false");
+            },
+            destroy: zone.destroy
+        };
+    }
     const handleDnd = (e: CustomEvent) => {
         allItems = e.detail.items;
     };
@@ -221,7 +237,7 @@
         {/if}
         <SortBy />
     </div>
-    {#if data.list.owner.isMe}
+    {#if data.list.owner.isMe || data.list.isManager}
         <div class="flex flex-row flex-wrap items-center gap-2">
             <ReorderChip onFinalize={handleReorderFinalize} bind:reordering />
             <ManageListChip onclick={() => goto(`${new URL(page.url).pathname}/manage`)} />
@@ -229,7 +245,7 @@
     {/if}
 </div>
 
-{#if data.list.owner.isMe}
+{#if data.list.owner.isMe || data.list.isManager}
     <div class="flex flex-wrap-reverse justify-between gap-2 pb-4">
         <ListStatistics {items} />
         {#if data.listMode === "registry" || data.list.public}
@@ -250,20 +266,20 @@
     </div>
 {/if}
 
-{#if data.list.owner.isMe}{/if}
-
-{#if data.list.owner.isMe && approvals.length > 0}
+{#if (data.list.owner.isMe || data.list.isManager) && approvals.length > 0}
     <div class="flex flex-col space-y-4 pb-4">
         <h2 class="h2">{$t("wishes.approvals")}</h2>
-        <div class="flex flex-col space-y-4">
+        <div class="flex flex-col space-y-4" data-testid="approvals-container">
             {#each approvals as item (item.id)}
                 <div in:receive={{ key: item.id }} out:send|local={{ key: item.id }} animate:flip={{ duration: 200 }}>
                     <ItemCard
                         groupId={data.list.groupId}
                         {item}
                         requireClaimEmail={data.requireClaimEmail}
+                        showClaimForOwner={data.showClaimForOwner}
                         showClaimedName={data.showClaimedName}
-                        user={data.list.owner}
+                        user={data.loggedInUser}
+                        userCanManage={data.list.isManager}
                     />
                 </div>
             {/each}
@@ -281,12 +297,13 @@
     <!-- items -->
     <div
         class="flex flex-col space-y-4 rounded-container-token"
+        data-testid="items-container"
         onconsider={handleDnd}
         onfinalize={handleDnd}
-        use:dragHandleZone={{
+        use:dndZone={{
             items,
             flipDurationMs,
-            dragDisabled: !reordering,
+            dragDisabled: false,
             dropTargetClasses: ["variant-ringed-primary"],
             dropTargetStyle: {}
         }}
@@ -302,8 +319,10 @@
                         onIncreasePriority={handleIncreasePriority}
                         reorderActions
                         requireClaimEmail={data.requireClaimEmail}
+                        showClaimForOwner={data.showClaimForOwner}
                         showClaimedName={data.showClaimedName}
                         user={data.loggedInUser}
+                        userCanManage={data.list.isManager}
                     />
                 </div>
             {/each}
@@ -320,8 +339,10 @@
                             {item}
                             onPublicList={!data.loggedInUser && data.list.public}
                             requireClaimEmail={data.requireClaimEmail}
+                            showClaimForOwner={data.showClaimForOwner}
                             showClaimedName={data.showClaimedName}
                             user={data.loggedInUser}
+                            userCanManage={data.list.isManager}
                         />
                     </div>
                 {/each}

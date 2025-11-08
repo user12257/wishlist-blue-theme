@@ -11,16 +11,15 @@
     const t = getFormatter();
 </script>
 
-<SettingsGroup>
-    <h3 class="h3">{$t("wishes.lists")}</h3>
+<SettingsGroup title={$t("wishes.lists")}>
     <Setting>
         <label class="checkbox-label">
             <input
                 id="enableDefaultListCreation"
                 name="enableDefaultListCreation"
                 class="checkbox"
+                checked={config.enableDefaultListCreation}
                 type="checkbox"
-                bind:checked={config.enableDefaultListCreation}
             />
             <span>{$t("admin.enable-default-list-creation")}</span>
         </label>

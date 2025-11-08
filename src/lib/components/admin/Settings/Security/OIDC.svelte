@@ -13,10 +13,9 @@
     const t = getFormatter();
 </script>
 
-<SettingsGroup>
-    <h3 class="h3">{$t("admin.oidc")}</h3>
+<SettingsGroup title={$t("admin.oidc")}>
     <label class="checkbox-label">
-        <input id="enableOIDC" name="enableOIDC" class="checkbox" type="checkbox" bind:checked={config.oidc.enable} />
+        <input id="enableOIDC" name="enableOIDC" class="checkbox" checked={config.oidc.enable} type="checkbox" />
         <span>{$t("general.enable")}</span>
     </label>
     {#if config.oidc.enable}
@@ -30,7 +29,7 @@
                     autocomplete="off"
                     required
                     type="url"
-                    bind:value={config.oidc.discoveryUrl}
+                    value={config.oidc.discoveryUrl}
                 />
             </label>
             <label for="oidcProviderName">
@@ -42,7 +41,7 @@
                     autocomplete="off"
                     placeholder="OAuth"
                     type="text"
-                    bind:value={config.oidc.providerName}
+                    value={config.oidc.providerName}
                 />
             </label>
             <label for="oidcClientId">
@@ -54,7 +53,7 @@
                     autocomplete="off"
                     required
                     type="text"
-                    bind:value={config.oidc.clientId}
+                    value={config.oidc.clientId}
                 />
             </label>
             <PasswordInput
@@ -63,17 +62,17 @@
                 autocomplete="off"
                 label={$t("admin.oidc-client-secret")}
                 required
-                bind:value={config.oidc.clientSecret}
+                value={config.oidc.clientSecret}
             />
 
-            <Setting>
+            <Setting class="col-span-full">
                 <label class="checkbox-label">
                     <input
                         id="oidcAutoRedirect"
                         name="oidcAutoRedirect"
                         class="checkbox"
+                        checked={config.oidc.autoRedirect}
                         type="checkbox"
-                        bind:checked={config.oidc.autoRedirect}
                     />
                     <Tooltip>
                         {#snippet label()}
@@ -84,25 +83,60 @@
                         {/snippet}
                     </Tooltip>
                 </label>
+                {#snippet description()}
+                    <span>{$t("admin.oidc-auto-redirect-description")}</span>
+                {/snippet}
             </Setting>
 
-            <label class="checkbox-label">
-                <input
-                    id="oidcAutoRegister"
-                    name="oidcAutoRegister"
-                    class="checkbox"
-                    type="checkbox"
-                    bind:checked={config.oidc.autoRegister}
-                />
-                <Tooltip>
-                    {#snippet label()}
-                        <span>{$t("admin.oidc-auto-register")}</span>
-                    {/snippet}
-                    {#snippet description()}
-                        <span>{$t("admin.oidc-auto-register-tooltip")}</span>
-                    {/snippet}
-                </Tooltip>
-            </label>
+            <Setting class="col-span-full">
+                <label class="checkbox-label col-span-full">
+                    <input
+                        id="oidcAutoRegister"
+                        name="oidcAutoRegister"
+                        class="checkbox"
+                        checked={config.oidc.autoRegister}
+                        type="checkbox"
+                    />
+                    <span>{$t("admin.oidc-auto-register")}</span>
+                </label>
+                {#snippet description()}
+                    <span>{$t("admin.oidc-auto-register-tooltip")}</span>
+                {/snippet}
+            </Setting>
+
+            <Setting class="col-span-full">
+                <label class="checkbox-label">
+                    <input
+                        id="oidcEnableSync"
+                        name="oidcEnableSync"
+                        class="checkbox"
+                        checked={config.oidc.enableSync}
+                        type="checkbox"
+                    />
+                    <span>{$t("admin.enable-sync")}</span>
+                </label>
+                {#snippet description()}
+                    <span>{$t("admin.enable-sync-description")}</span>
+                {/snippet}
+            </Setting>
+
+            <Setting class="col-span-full">
+                <label class="checkbox-label">
+                    <input
+                        id="oidcDisableEmailVerification"
+                        name="oidcDisableEmailVerification"
+                        class="checkbox"
+                        checked={config.oidc.disableEmailVerification}
+                        type="checkbox"
+                    />
+                    <span>{$t("admin.disable-email-verification")}</span>
+                </label>
+                {#snippet description()}
+                    <span>
+                        {$t("admin.disable-email-verification-description")}
+                    </span>
+                {/snippet}
+            </Setting>
         </div>
     {/if}
 </SettingsGroup>
