@@ -166,6 +166,25 @@ function logHttpAccess(logger: Logger, verb: string, path: string, status: numbe
       ...extra
     }
   );
+    console.log(
+    "evt": {
+        {
+          Meta: {
+            service: "http",
+            log_type: "http_access-log",
+            http_status: String(status)
+          },
+          Parsed: {
+            verb,
+            path
+          },
+          Client: {
+            ip: ip || null
+          },
+          ...extra
+        }
+    }
+  );
 }
 
 function canRedirect(url: URL, cookies: Cookies) {
