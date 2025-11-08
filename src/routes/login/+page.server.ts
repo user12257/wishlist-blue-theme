@@ -152,6 +152,7 @@ function logHttpAccess(logger: Logger, verb: string, path: string, status: numbe
   console.log(
     {
       Meta: {
+        service: "http",
         log_type: "http_access-log",
         http_status: String(status)
       },
