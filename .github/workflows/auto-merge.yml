@@ -21,7 +21,7 @@ jobs:
                                 # (but actions/checkout@v2 can also be instructed
                                 # to fetch all git depth right from the start)
 
-          git remote add upstream https://github.com/user12257/wishlist-blue-theme.git
+          git remote add upstream https://github.com/cmintey/wishlist.git
           git fetch upstream
           
           # Check if there are changes to merge
