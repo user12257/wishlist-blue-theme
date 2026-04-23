@@ -195,3 +195,4 @@ function canRedirect(url: URL, cookies: Cookies) {
         !cookies.get("direct")
     );
 }
+
