@@ -5,11 +5,10 @@
     import { shouldShowName, getClaimedName } from "../../util";
     import type { ItemCardProps } from "../ItemCard.svelte";
 
-    interface Props
-        extends Pick<
-            ItemCardProps,
-            "item" | "onPublicList" | "user" | "showClaimForOwner" | "showClaimedName" | "showFor"
-        > {
+    interface Props extends Pick<
+        ItemCardProps,
+        "item" | "onPublicList" | "user" | "showClaimForOwner" | "showClaimedName" | "showNameAcrossGroups" | "showFor"
+    > {
         showDetail?: boolean;
         fullNotes?: boolean;
     }
@@ -20,6 +19,7 @@
         onPublicList,
         user,
         showClaimedName,
+        showNameAcrossGroups = false,
         showClaimForOwner = false,
         showFor,
         showDetail = false,
@@ -52,7 +52,7 @@
         </span>
         {#if item.quantity && (user?.id !== item.userId || showClaimForOwner)}
             <span>·</span>
-            <span class="text-secondary-700-200-token font-bold" data-testid="quantity-claimed">
+            <span class="text-secondary-900-100 font-bold" data-testid="quantity-claimed">
                 {$t("wishes.quantity-claimed", { values: { quantity: item.claimedQuantity } })}
             </span>
         {/if}
@@ -61,7 +61,7 @@
 {#if showDetail && showClaimedName && item.claims.length > 0 && (item.userId !== user?.id || showClaimForOwner)}
     <div class="card text-sm">
         <button
-            class="flex w-full items-center !justify-start gap-2 p-2 !text-start text-sm"
+            class="flex w-full items-center justify-start! gap-2 p-2 text-start! text-sm"
             onclick={() => (expandClaims = !expandClaims)}
         >
             <iconify-icon icon={expandClaims ? "ion:chevron-up" : "ion:chevron-down"}></iconify-icon>
@@ -71,7 +71,14 @@
         {#if expandClaims}
             <div class="max-h-32 overflow-auto px-2 pb-2">
                 {#each item.claims as claim}
-                    {@const showName = shouldShowName(item, showClaimedName, showClaimForOwner, user, claim)}
+                    {@const showName = shouldShowName(
+                        item,
+                        showClaimedName,
+                        showNameAcrossGroups,
+                        showClaimForOwner,
+                        user,
+                        claim
+                    )}
                     <div class="flex items-center justify-between py-1">
                         <span>{showName ? getClaimedName(claim) : $t("wishes.anonymous")}</span>
                         <span>
@@ -89,13 +96,17 @@
     <iconify-icon icon="ion:person"></iconify-icon>
     <span class="text-wrap" data-testid="added-by">
         {#if showFor}
-            {@html $t("wishes.for", { values: { name: item.user.name } })}
+            {@html $t("wishes.for", { values: { name: item.user.name, class: "text-secondary-900-100 font-bold" } })}
         {:else if !onPublicList}
-            {@html $t("wishes.added-by", { values: { name: item.addedBy.name } })}
+            {@html $t("wishes.added-by", {
+                values: { name: item.addedBy.name, class: "text-secondary-900-100 font-bold" }
+            })}
         {:else}
             {@html item.addedBy.id === item.user.id
-                ? $t("wishes.added-by", { values: { name: item.addedBy.name } })
-                : $t("wishes.added-by-somebody-else")}
+                ? $t("wishes.added-by", {
+                      values: { name: item.addedBy.name, class: "text-secondary-900-100 font-bold" }
+                  })
+                : $t("wishes.added-by-somebody-else", { values: { class: "text-secondary-900-100 font-bold" } })}
         {/if}
     </span>
 </div>
@@ -104,7 +115,7 @@
 {#if item.note}
     <div class="grid flex-none grid-cols-[auto_1fr] items-center gap-2">
         <iconify-icon icon="ion:reader"></iconify-icon>
-        <div class={["whitespace-pre-wrap", fullNotes ? "" : "line-clamp-2"]} data-testid="notes">
+        <div class={["whitespace-pre-wrap print:line-clamp-none", fullNotes ? "" : "line-clamp-2"]} data-testid="notes">
             <Markdown source={item.note} />
         </div>
     </div>

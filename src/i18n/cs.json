@@ -5,7 +5,7 @@
         "clear-color-field": "smazat barvu",
         "clear-icon-field": "smazat ikonu",
         "clear-name-field": "smazat jméno",
-        "clear-url-field": "smazat URL",
+        "clear-url-field": "smazat url",
         "close": "zavřít",
         "decrease-priority": "Snížit prioritu pro {name}",
         "default-item-image": "výchozí obrázek",
@@ -37,7 +37,7 @@
         "administration": "Správa",
         "allow-public-lists": "Povolit veřejné seznamy",
         "allow-public-lists-tooltip": "Povolit uživatelům zveřejňovat seznamy. Nefunguje, pokud je skupina v \"registry\" režimu.",
-        "build": "Build: <a href=\"https://github.com/cmintey/wishlist/commit/{sha}\">{sha}</a>",
+        "build": "Build: <a class=\"{class}\" href=\"{href}\">{sha}</a>",
         "claims": "Rezervace",
         "claims-name-tooltip": "Zobraz uživatele, který si předmět zarezervoval.",
         "claims-require-email": "Vyžadovat email",
@@ -111,7 +111,7 @@
         "user-was-deleted": "{username} odstraněn",
         "username-field": "Uživatel: {username}",
         "users": "Uživatelé",
-        "version": "Verze: <a href=\"https://github.com/cmintey/wishlist/releases/tag/{version}\">{version}</a>",
+        "version": "Verze: <a class=\"{class}\" href=\"{href}\">{version}</a>",
         "wishlist-mode": "Režim seznamu přání",
         "wishlist-mode-alert": "V této skupině je {memberCount} členů a {listCount} seznamů. Nemůžete přepnout režim, dokud neodstraníte všechny členy a seznamy kromě jednoho člena a jednoho seznamu.",
         "wishlist-mode-display-text": "V režimu \"Wishlist/Seznam přání\" můžete mít více uživatelů a seznamů a rezervovat si položky od jiných uživatelů. V režimu \"Registry\" máte jeden seznam, který můžete veřejně sdílet.",
@@ -127,7 +127,16 @@
         "oidc-url": "Issuer URL",
         "clear-lists": "Vymazat {groupSpecific, select, true {} other {všechny}} {claimedOnly, select, true {rezervované položky} other {seznamy}}",
         "clear-lists-confirmation": "Chceš vymazat {claimedOnly, select, true {rezervované položky} other {všechny seznamy přání}} {groupSpecific, select, true {v této skupině} other {napříč <b>všemi skupinami</b>}}? <b>Tato akce je nevratná!</b>",
-        "dev": "dev"
+        "dev": "dev",
+        "show-name-across-groups": "Zobrazovat jméno napříč skupinami",
+        "show-name-across-groups-tooltip": "Zobrazí jméno uživatele, který si předmět zarezervoval, i když uživatel není součástí vaší skupiny.",
+        "ignore-cert-check": "Ignorovat neplatný certifikát",
+        "oidc-claim-name-description": "Atribut, který se má použít pro nastavení jména.",
+        "oidc-claim-username-description": "Atribut, který se má použít pro nastavení uživatelského jména.",
+        "sending": "Posílám",
+        "smtp-ignore-cert-check-description": "Neověřovat TLS certifikát. Nejčastěji použito pro lokální připojení. Nedoporučeno.",
+        "smtp-use-tls": "Použít TLS",
+        "smtp-use-tls-description": "Připojovat se k SMTP serveru pomocí TLS namísto STARTTLS. Obvykle pro port 465."
     },
     "app": {
         "home": "Domů",
@@ -255,7 +264,8 @@
         "username-already-in-use": "{username} je již registrován",
         "username-must-not-be-blank": "Uživatelské jméno nesmí být prázdné",
         "valid-url-not-provided": "Neplatné URL",
-        "oidc-error": "Přihlášení přes OAuth se nezdařilo"
+        "oidc-error": "Přihlášení přes OAuth se nezdařilo",
+        "display-order-invalid": "Řazení musí být mezi {min} a {max}"
     },
     "general": {
         "add-a-description": "Přidat popis",
@@ -274,7 +284,7 @@
         "create-group": "Vytvořit novou skupinu",
         "description": "Popis",
         "dismiss": "Zavřít",
-        "dont-see-language": "Nevidíte-li svůj jazyk a nebo je chybný nějaký překlad či dokonce úplně chybí? <a href=\"{href}\" target=\"_blank\"> Zjistěte, jak to můžete změnit.</a>",
+        "dont-see-language": "Nevidíte-li svůj jazyk a nebo je chybný nějaký překlad či dokonce úplně chybí? <a class=\"{class}\" href=\"{href}\" target=\"_blank\">Zjistěte, jak to můžete změnit.</a>",
         "enable": "Povolit",
         "enter-group-name": "Zadejte jméno skupiny",
         "enter-user-email": "Vložte uživatelův email a skupinu, do které ho chcete přidat",
@@ -326,7 +336,13 @@
         "submit": "Odeslat",
         "success": "Úspěšně dokončeno!",
         "this-invite-link-is-only-valid-for-one-signup": "Tato pozvánka je platná pouze pro jednu registraci",
-        "toggle-dark-mode": "Přepnout světlý/tmavý režim"
+        "toggle-dark-mode": "Přepnout světlý/tmavý režim",
+        "import": "Importovat",
+        "no-lists-available": "Není dostupný žádný seznam",
+        "dark": "Tmavý",
+        "light": "Světlý",
+        "no-results": "Žádný výsledek.",
+        "system": "Systém"
     },
     "setup": {
         "back": "Zpět",
@@ -350,8 +366,8 @@
         "add-a-list-manager-explainer": "Vybrat uživatele z této skupiny a přidat mu práva správce.",
         "add-a-manager": "Přidat správce",
         "add-item": "Vytvořit položku",
-        "added-by": "Přidal <span class=\"text-secondary-700-200-token font-bold\">{name}</span>",
-        "added-by-somebody-else": "Přidáno <span class=\"text-secondary-700-200-token font-bold\">někým jiným</span>",
+        "added-by": "Přidal <span class=\"{class}\">{name}</span>",
+        "added-by-somebody-else": "Přidáno <span class=\"{class}\">někým jiným</span>",
         "additional-items-requested": "{remainingQuantity, plural, =0 {Nejsou dostupné žádné další předměty} one {Další # předmět dostupný.} other {Dalších # předmětů je dostupných.}}",
         "all-lists": "Všechny seznamy",
         "anonymous": "Anonymní",
@@ -384,7 +400,7 @@
         "enter-the-quantity-to-claim": "Počet předmětů k rezervaci.",
         "filter": "Filtrovat",
         "finish": "Dokončit",
-        "for": "Pro <span class=\"text-secondary-700-200-token font-bold\">{name}</span>",
+        "for": "Pro <span class=\"{class}\">{name}</span>",
         "hang-tight-gathering-product-data": "Počkejte, stahuji data",
         "hide-all-currencies": "Skrýt všechny měny...",
         "hide-claims": "Skrýt rezervace",
@@ -448,6 +464,16 @@
         "tile-view": "Dlaždicové zobrazení",
         "list-view": "Řádkové zobrazení",
         "group-by": "Seskupit podle",
-        "sort-by": "Seřadit podle"
+        "sort-by": "Seřadit podle",
+        "claimed-by-you-on-another-list": "Máte zarezervováno v jiném seznamu",
+        "display-order": "Řazení",
+        "most-wanted": "Nejžádanější",
+        "most-wanted-description": "Zvýraznit položku a tím dát vědět, že je nejvíce chtěná.",
+        "import-error-text": "Aplikace nebyla schopna stáhnout informace o produktu. Je však možné vyplnit tyto údaje ručně.",
+        "import-error-title": "Nepodařilo se importovat položku",
+        "import-item": "Importovat položku",
+        "import-item-text": "Před importem vyberte skupinu a seznam",
+        "select-a-list": "Vybrat seznam",
+        "item-created": "Položka vytvořena"
     }
 }

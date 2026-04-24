@@ -4,52 +4,19 @@
     import ManageButtons from "../ManageButtons.svelte";
     import ReorderButtons from "../ReorderButtons.svelte";
 
-    const {
-        item,
-        user,
-        userCanManage,
-        showClaimedName = false,
-        showClaimForOwner = false,
-        onPublicList = false,
-        reorderActions = false,
-        onIncreasePriority,
-        onDecreasePriority,
-        onClaim,
-        onUnclaim,
-        onPurchased,
-        onDelete,
-        onEdit,
-        onApproval
-    }: Omit<InternalItemCardProps, "id" | "defaultImage"> = $props();
+    const props: Omit<InternalItemCardProps, "id" | "defaultImage"> = $props();
 </script>
 
 <footer
-    class="card-footer flex flex-wrap items-center gap-2 px-4 pb-4"
-    class:justify-between={!reorderActions}
-    class:justify-center={reorderActions}
+    class={[
+        "flex flex-wrap items-center gap-2 px-4 print:hidden",
+        props.reorderActions ? "justify-center pb-0" : "justify-between pb-4"
+    ]}
 >
-    {#if reorderActions}
-        <ReorderButtons {item} {onDecreasePriority} {onIncreasePriority} />
+    {#if props.reorderActions}
+        <ReorderButtons {...props} />
     {:else}
-        <ClaimButtons
-            {item}
-            {onClaim}
-            {onPublicList}
-            {onPurchased}
-            {onUnclaim}
-            {showClaimForOwner}
-            {showClaimedName}
-            {user}
-        />
-
-        <ManageButtons
-            {item}
-            onApprove={() => onApproval?.(true)}
-            {onDelete}
-            onDeny={() => onApproval?.(false)}
-            {onEdit}
-            {user}
-            {userCanManage}
-        />
+        <ClaimButtons {...props} />
+        <ManageButtons {...props} />
     {/if}
 </footer>

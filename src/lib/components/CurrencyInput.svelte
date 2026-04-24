@@ -2,8 +2,9 @@
     import { getFormatter as getPriceFormatter, getLocaleConfig } from "$lib/price-formatter";
     import type { KeyboardEventHandler } from "svelte/elements";
     import { onMount } from "svelte";
-    import { getToastStore } from "@skeletonlabs/skeleton";
-    import { getFormatter } from "$lib/i18n";
+    import { getFormatter, getLocale } from "$lib/i18n";
+    import { toaster } from "./toaster";
+    import { getNumberFormatter } from "svelte-i18n";
 
     interface Props {
         value?: number | null;
@@ -15,12 +16,14 @@
 
     let { value = $bindable(null), currency = $bindable("USD"), name, id, disabled = false }: Props = $props();
     const t = getFormatter();
+    const locale = getLocale();
 
-    const toastStore = getToastStore();
-    let formatter = $derived(getPriceFormatter(currency));
-    let localeConfig = $derived(getLocaleConfig(formatter));
-    let maximumFractionDigits = $derived(formatter.resolvedOptions().maximumFractionDigits || 2);
-    let inputtedValue = value !== null ? value.toString() : "";
+    let numberFormatter = getNumberFormatter({ locale });
+    let priceFormatter = $derived(getPriceFormatter(currency));
+    let localeConfig = $derived(getLocaleConfig(priceFormatter));
+    let maximumFractionDigits = $derived(priceFormatter.resolvedOptions().maximumFractionDigits || 2);
+    let inputtedValue = $state(value !== null ? numberFormatter.format(value) : "");
+    // svelte-ignore state_referenced_locally
     let displayValue = $state(inputtedValue);
     let inputElement: HTMLInputElement | undefined = $state();
     let isMounted = $state(false);
@@ -32,7 +35,7 @@
 
     $effect(() => {
         if (isMounted && document.activeElement !== inputElement && value !== null)
-            displayValue = formatter.format(value);
+            displayValue = priceFormatter.format(value);
     });
 
     // Checks if the key pressed is allowed
@@ -74,7 +77,7 @@
         }
         value = parseFloat(stringValue);
         inputtedValue = displayValue;
-        displayValue = formatter.format(value);
+        displayValue = priceFormatter.format(value);
     };
 
     const handleFocus = () => {
@@ -88,8 +91,8 @@
     ) => {
         if (!e.currentTarget.value) {
             currency = previousCurrency;
-            toastStore.trigger({
-                message: $t("errors.price-must-have-a-currency")
+            toaster.info({
+                description: $t("errors.price-must-have-a-currency")
             });
             return;
         }
@@ -98,9 +101,8 @@
             currency = e.currentTarget.value.toUpperCase();
         } catch {
             e.currentTarget.value = previousCurrency;
-            toastStore.trigger({
-                background: "variant-filled-warning",
-                message: $t("errors.invalid-currency-code")
+            toaster.warning({
+                description: $t("errors.invalid-currency-code")
             });
             return;
         }
@@ -109,33 +111,33 @@
 </script>
 
 <div class="input-group grid-cols-[auto_1fr_auto]">
-    <div class="input-group-shim">
+    <div class="ig-cell preset-tonal">
         <iconify-icon icon="ion:pricetag"></iconify-icon>
     </div>
-    <div class="border-surface-400-500-token border-r focus:border-surface-400-500-token rtl:border-l">
-        <input {id} {name} {disabled} type="hidden" bind:value />
-        <input
-            bind:this={inputElement}
-            id={`formatted-${id}`}
-            name={`formatted-${name}`}
-            class="input"
-            autocomplete="off"
-            {disabled}
-            inputmode={maximumFractionDigits > 0 ? "decimal" : "numeric"}
-            onblur={handleBlur}
-            onfocus={handleFocus}
-            onkeydown={handleKeyDown}
-            placeholder={formatter.format(0)}
-            type="text"
-            bind:value={displayValue}
-        />
-    </div>
-    <input id="currency" name="currency" type="hidden" bind:value={currency} />
     <input
-        class="border-surface-400-500-token w-[8ch] border-l uppercase focus:border-surface-400-500-token"
+        bind:this={inputElement}
+        id={`formatted-${id}`}
+        name={`formatted-${name}`}
+        class="ig-input"
+        autocomplete="off"
+        {disabled}
+        inputmode={maximumFractionDigits > 0 ? "decimal" : "numeric"}
+        onblur={handleBlur}
+        onfocus={handleFocus}
+        onkeydown={handleKeyDown}
+        placeholder={priceFormatter.format(0)}
+        type="text"
+        bind:value={displayValue}
+    />
+    <input
+        class="ig-input w-[8ch] uppercase"
         data-testid="currency"
         maxlength="3"
         onchange={validateCurrency}
+        type="text"
         value={currency}
     />
 </div>
+
+<input {id} {name} {disabled} type="hidden" bind:value />
+<input id="currency" name="currency" type="hidden" bind:value={currency} />

@@ -12,6 +12,7 @@ export class ItemForm {
     private readonly uploadImageField: Locator;
     private readonly uploadImageButton: Locator;
     private readonly imageUrlField: Locator;
+    private readonly mostWantedCheckbox: Locator;
     private readonly notesField: Locator;
     private readonly notesWriteTab: Locator;
     private readonly notesPreviewTab: Locator;
@@ -29,10 +30,11 @@ export class ItemForm {
         this.noLimitCheckbox = page.getByLabel("No limit");
         this.uploadImageField = page.getByLabel("Upload Image");
         this.uploadImageButton = page.getByRole("button", { name: "Select File" });
+        this.mostWantedCheckbox = page.getByLabel("Most wanted");
         this.imageUrlField = page.getByLabel("Image URL");
         this.notesField = page.getByLabel("Notes");
-        this.notesWriteTab = page.locator(".tab-label", { hasText: "Write" });
-        this.notesPreviewTab = page.locator(".tab-label", { hasText: "Preview" });
+        this.notesWriteTab = page.getByRole("tab", { name: "Write" });
+        this.notesPreviewTab = page.getByRole("tab", { name: "Preview" });
         this.notesPreviewContainer = page.getByTestId("markdown-preview");
         this.listSelectorField = page.getByRole("group", { name: "Lists" });
         this.hangTightBackdrop = page.getByText("Hang tight, gathering product data");
@@ -80,6 +82,16 @@ export class ItemForm {
 
     async uploadImage() {
         // todo
+        return this;
+    }
+
+    async checkMostWanted() {
+        await this.mostWantedCheckbox.check();
+        return this;
+    }
+
+    async uncheckMostWanted() {
+        await this.mostWantedCheckbox.uncheck();
         return this;
     }
 

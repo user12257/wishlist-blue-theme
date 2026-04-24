@@ -46,6 +46,8 @@ type SMTPConfig =
           pass?: string | null;
           from?: string | null;
           fromName?: string | null;
+          useTls?: boolean | null;
+          ignoreCertCheck?: boolean | null;
       }
     | {
           enable: true;
@@ -55,6 +57,9 @@ type SMTPConfig =
           pass?: string;
           from: string;
           fromName: string;
+
+          useTls?: boolean;
+          ignoreCertCheck?: boolean;
       };
 
 type OIDCConfig =
@@ -68,17 +73,21 @@ type OIDCConfig =
           autoRegister?: boolean | null;
           enableSync?: boolean | null;
           disableEmailVerification?: boolean | null;
+          nameClaim?: string | null;
+          usernameClaim?: string | null;
       }
     | {
           enable: true;
           discoveryUrl: string;
           clientId: string;
           clientSecret: string;
-          providerName?: string | null;
+          providerName: string | null | undefined;
           autoRedirect: boolean;
           autoRegister: boolean;
           enableSync: boolean;
           disableEmailVerification: boolean;
+          nameClaim: string | null | undefined;
+          usernameClaim: string | null | undefined;
       };
 
 type Config = {
@@ -90,6 +99,7 @@ type Config = {
     smtp: SMTPConfig;
     claims: {
         showName: boolean;
+        showNameAcrossGroups: boolean;
         showForOwner: boolean;
         requireEmail: boolean;
     };
@@ -111,7 +121,7 @@ type Option = {
 };
 type Direction = "asc" | "desc";
 
-type GroupInformation = import("@prisma/client").Group & {
+type GroupInformation = import("$lib/generated/prisma/client").Group & {
     isManager: boolean;
     active: boolean;
 };
@@ -124,4 +134,4 @@ type DeepPartial<T> = T extends object
 
 type InviteMethod = "email" | "link";
 
-type LocalUser = Omit<import("@prisma/client").User, "hashedPassword">;
+type LocalUser = Omit<import("$lib/generated/prisma/client").User, "hashedPassword">;

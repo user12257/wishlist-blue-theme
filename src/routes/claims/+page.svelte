@@ -51,7 +51,7 @@
 </script>
 
 <!-- View mode toggle -->
-<div class="flex flex-wrap items-end justify-between gap-2 pb-4">
+<div class="flex flex-wrap items-end justify-between gap-2 pb-4 print:hidden">
     <div class="flex items-end gap-2">
         <ListFilterChip {users} />
         <ClaimsGroupBy bind:groupBy />
@@ -83,7 +83,15 @@
             >
                 {#each sortedItems as item (item.id)}
                     <div transition:fade animate:flip={{ duration: 200 }}>
-                        <ItemCard {isTileView} {item} requireClaimEmail showClaimedName showFor user={data.user} />
+                        <ItemCard
+                            groupId={data.user.activeGroupId}
+                            {isTileView}
+                            {item}
+                            requireClaimEmail
+                            showClaimedName
+                            showFor
+                            user={data.user}
+                        />
                     </div>
                 {/each}
             </div>

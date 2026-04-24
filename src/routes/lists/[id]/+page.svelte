@@ -16,7 +16,6 @@
     import { ListAPI } from "$lib/api/lists";
     import TokenCopy from "$lib/components/TokenCopy.svelte";
     import { dragHandleZone, type DndZoneAttributes, type Item, type Options } from "svelte-dnd-action";
-    import { getToastStore } from "@skeletonlabs/skeleton";
     import ReorderChip from "$lib/components/wishlists/chips/ReorderChip.svelte";
     import ManageListChip from "$lib/components/wishlists/chips/ManageListChip.svelte";
     import ListViewModeChip from "$lib/components/wishlists/chips/ListViewModeChip.svelte";
@@ -26,10 +25,12 @@
     import Markdown from "$lib/components/Markdown.svelte";
     import ListStatistics from "$lib/components/wishlists/ListStatistics.svelte";
     import type { ActionReturn } from "svelte/action";
+    import { toaster } from "$lib/components/toaster";
 
     const { data }: PageProps = $props();
     const t = getFormatter();
 
+    // svelte-ignore state_referenced_locally
     let allItems: ItemOnListDTO[] = $state(data.list.items);
     let reordering = $state(false);
     let publicListUrl: URL | undefined = $state();
@@ -48,12 +49,12 @@
 
     // Initialize from server data (cookie) to prevent flicker
     // This value comes from the server, so SSR renders the correct view
+    // svelte-ignore state_referenced_locally
     initListViewPreference(data.initialViewPreference);
     let isTileView = $derived(getListViewPreference() === "tile");
 
     const flipDurationMs = 200;
-    const listAPI = new ListAPI(data.list.id);
-    const toastStore = getToastStore();
+    const listAPI = $derived(new ListAPI(data.list.id));
 
     const [send, receive] = crossfade({
         duration: (d) => Math.sqrt(d * 200),
@@ -76,6 +77,7 @@
     onMount(async () => {
         await updateHash();
     });
+
     onMount(() => {
         const eventSource = subscribeToEvents();
         return () => eventSource.close();
@@ -84,6 +86,10 @@
     $effect(() => {
         allItems = data.list.items;
     });
+
+    const updateDisplayOrder = (items: ItemOnListDTO[]) => {
+        items.forEach((it, idx) => (it.displayOrder = idx));
+    };
 
     const groupItems = (items: ItemOnListDTO[]) => {
         // When on own list, don't separate out claimed vs un-claimed
@@ -106,7 +112,7 @@
 
     const updateHash = async () => {
         const userHash = await hash(data.list.id);
-        $viewedItems[userHash] = await hashItems(allItems);
+        viewedItems.current[userHash] = await hashItems(allItems);
     };
 
     const subscribeToEvents = () => {
@@ -161,11 +167,8 @@
             const listApi = new ListAPI(data.list.id);
             const resp = await listApi.makePublic();
             if (!resp.ok) {
-                const message = await resp.text();
-                toastStore.trigger({
-                    message,
-                    background: "variant-filled-error"
-                });
+                const description = await resp.text();
+                toaster.error({ description });
                 return;
             }
         }
@@ -189,9 +192,12 @@
     }
     const handleDnd = (e: CustomEvent) => {
         allItems = e.detail.items;
+        updateDisplayOrder(allItems);
     };
-    const swap = <T,>(arr: T[], a: number, b: number) => {
-        return arr.with(a, arr[b]).with(b, arr[a]);
+    const swap = (arr: ItemOnListDTO[], a: number, b: number) => {
+        const swapped = arr.with(a, arr[b]).with(b, arr[a]);
+        updateDisplayOrder(swapped);
+        return swapped;
     };
     const handleIncreasePriority = (itemId: number) => {
         const itemIdx = allItems.findIndex((item) => item.id === itemId);
@@ -205,6 +211,45 @@
             allItems = swap(allItems, itemIdx, itemIdx + 1);
         }
     };
+    const handlePriorityInput = (item: ItemOnListDTO, idxString: string) => {
+        const targetIdx = Number.parseInt(idxString) - 1;
+        const currentIdx = allItems.findIndex((it) => it.id === item.id);
+
+        if (Number.isNaN(targetIdx) || targetIdx < 0 || targetIdx > allItems.length - 1) {
+            toaster.error({
+                description: $t("errors.display-order-invalid", { values: { min: 1, max: allItems.length } })
+            });
+            if (item.displayOrder) {
+                const el = document.getElementById(`${item.id}-displayOrder`) as HTMLInputElement;
+                el.value = (item.displayOrder + 1).toString();
+            }
+            return;
+        }
+        if (currentIdx !== targetIdx) {
+            const resortedItems: ItemOnListDTO[] = [];
+            let displayOrder = 0;
+            for (let i = 0; i < allItems.length; i++) {
+                if (i === currentIdx) {
+                    continue;
+                }
+                if (i === targetIdx) {
+                    if (targetIdx < currentIdx) {
+                        resortedItems.push(allItems[currentIdx]);
+                        resortedItems.push(allItems[i]);
+                    } else {
+                        resortedItems.push(allItems[i]);
+                        resortedItems.push(allItems[currentIdx]);
+                    }
+
+                    resortedItems.at(-2)!.displayOrder = displayOrder++;
+                } else {
+                    resortedItems.push(allItems[i]);
+                }
+                resortedItems.at(-1)!.displayOrder = displayOrder++;
+            }
+            allItems = resortedItems;
+        }
+    };
     const handleReorderFinalize = async () => {
         reordering = false;
         const displayOrderUpdate = allItems.map((item, idx) => ({
@@ -213,10 +258,7 @@
         }));
         const response = await listAPI.updateItems(displayOrderUpdate);
         if (!response.ok) {
-            toastStore.trigger({
-                message: $t("wishes.unable-to-update-item-ordering"),
-                background: "variant-filled-error"
-            });
+            toaster.error({ description: $t("wishes.unable-to-update-item-ordering") });
             allItems = data.list.items;
         }
     };
@@ -228,7 +270,7 @@
             <Markdown source={data.list.description} />
         {/if}
         <button
-            class="text-sm text-primary-700 dark:text-primary-500"
+            class="text-primary-700 dark:text-primary-500 text-sm print:hidden"
             onclick={() => (hideDescription = !hideDescription)}
         >
             {hideDescription ? $t("wishes.show-description") : $t("wishes.hide-description")}
@@ -237,7 +279,7 @@
 {/if}
 
 <!-- chips -->
-<div class="flex flex-wrap items-end justify-between gap-2 pb-4">
+<div class="flex flex-wrap items-end justify-between gap-2 pb-4 print:hidden">
     <div class="flex flex-row flex-wrap items-end gap-2">
         {#if !data.list.owner.isMe}
             <ClaimFilterChip />
@@ -256,18 +298,16 @@
 </div>
 
 {#if data.list.owner.isMe || data.list.isManager}
-    <div class="flex flex-wrap-reverse justify-between gap-2 pb-4">
+    <div class="flex flex-wrap-reverse items-start justify-between gap-2 pb-4 print:hidden">
         <ListStatistics {items} />
         {#if data.listMode === "registry" || data.list.public}
-            <div class="flex h-fit flex-row gap-x-2">
+            <div class="flex flex-row gap-x-2">
                 {#if publicListUrl}
-                    <div class="flex flex-row">
-                        <TokenCopy btnStyle="btn-icon-sm" url={publicListUrl?.href}>
-                            {$t("wishes.public-url")}
-                        </TokenCopy>
-                    </div>
+                    <TokenCopy btnStyle="btn-xs" url={publicListUrl?.href}>
+                        <span class="text-sm">{$t("wishes.public-url")}</span>
+                    </TokenCopy>
                 {:else}
-                    <button class="variant-ringed-surface btn btn-sm" onclick={getOrCreatePublicList}>
+                    <button class="btn btn-xs inset-ring-surface-500 inset-ring" onclick={getOrCreatePublicList}>
                         {$t("wishes.share")}
                     </button>
                 {/if}
@@ -277,7 +317,7 @@
 {/if}
 
 {#if (data.list.owner.isMe || data.list.isManager) && approvals.length > 0}
-    <div class="flex flex-col space-y-4 pb-4">
+    <div class="flex flex-col space-y-4 pb-4 print:hidden">
         <h2 class="h2">{$t("wishes.approvals")}</h2>
         <div
             class={isTileView
@@ -291,16 +331,18 @@
                         groupId={data.list.groupId}
                         {isTileView}
                         {item}
+                        onPublicList={!data.loggedInUser && data.list.public}
                         requireClaimEmail={data.requireClaimEmail}
                         showClaimForOwner={data.showClaimForOwner}
                         showClaimedName={data.showClaimedName}
+                        showNameAcrossGroups={data.showNameAcrossGroups}
                         user={data.loggedInUser}
                         userCanManage={data.list.isManager}
                     />
                 </div>
             {/each}
         </div>
-        <hr />
+        <hr class="hr" />
     </div>
 {/if}
 
@@ -322,7 +364,7 @@
             items,
             flipDurationMs,
             dragDisabled: false,
-            dropTargetClasses: ["variant-ringed-primary"],
+            dropTargetClasses: ["preset-outlined-primary-500"],
             dropTargetStyle: {}
         }}
     >
@@ -336,10 +378,13 @@
                         {item}
                         onDecreasePriority={handleDecreasePriority}
                         onIncreasePriority={handleIncreasePriority}
+                        onPriorityChange={handlePriorityInput}
+                        onPublicList={!data.loggedInUser && data.list.public}
                         reorderActions
                         requireClaimEmail={data.requireClaimEmail}
                         showClaimForOwner={data.showClaimForOwner}
                         showClaimedName={data.showClaimedName}
+                        showNameAcrossGroups={data.showNameAcrossGroups}
                         user={data.loggedInUser}
                         userCanManage={data.list.isManager}
                     />
@@ -361,6 +406,7 @@
                             requireClaimEmail={data.requireClaimEmail}
                             showClaimForOwner={data.showClaimForOwner}
                             showClaimedName={data.showClaimedName}
+                            showNameAcrossGroups={data.showNameAcrossGroups}
                             user={data.loggedInUser}
                             userCanManage={data.list.isManager}
                         />
@@ -371,7 +417,7 @@
     </div>
 
     <!-- spacer -->
-    <footer>
+    <footer class="print:hidden">
         <div class="h-16"></div>
     </footer>
 {/if}
@@ -379,13 +425,13 @@
 <!-- Add Item button -->
 {#if data.loggedInUser && (data.list.owner.isMe || data.suggestionsEnabled)}
     <button
-        class="z-90 variant-ghost-surface btn fixed right-4 h-16 w-16 rounded-full md:bottom-10 md:right-10 md:h-20 md:w-20"
+        class="preset-tonal btn btn-icon btn-icon-sm md:btn-icon-base inset-ring-surface-200-800 fixed right-4 z-30 h-16 w-16 p-0! inset-ring md:right-10 md:bottom-10 md:h-20 md:w-20 print:hidden"
         class:bottom-24={$isInstalled}
         class:bottom-4={!$isInstalled}
         aria-label="add item"
         onclick={() => goto(`${page.url.pathname}/create-item?redirectTo=${page.url.pathname}`, { replaceState: true })}
     >
-        <iconify-icon height="32" icon="ion:add" width="32"></iconify-icon>
+        <iconify-icon class="text-xl md:text-2xl" icon="ion:add"></iconify-icon>
     </button>
 {/if}
 

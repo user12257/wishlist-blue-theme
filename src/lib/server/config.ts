@@ -13,7 +13,10 @@ enum ConfigKey {
     SMTP_PASS = "smtp.pass",
     SMTP_FROM = "smtp.from",
     SMTP_FROM_NAME = "smtp.fromName",
+    SMTP_USE_TLS = "smtp.useTls",
+    SMTP_IGNORE_CERT_CHECK = "smtp.ignoreCertCheck",
     CLAIMS_SHOW_NAME = "claims.showName",
+    ClAIMS_SHOW_NAME_ACROSS_GROUPS = "claims.showNameAcrossGroups",
     CLAIMS_SHOW_FOR_OWNER = "claims.showForOwner",
     CLAIMS_REQUIRE_EMAIL = "claims.requireEmail",
     LIST_MODE = "listMode",
@@ -30,7 +33,9 @@ enum ConfigKey {
     OIDC_AUTO_REDIRECT = "oidc.autoRedirect",
     OIDC_AUTO_REGISTER = "oidc.autoRegister",
     OIDC_ENABLE_SYNC = "oidc.enableSync",
-    OIDC_DISABLE_EMAIL_VERIFICATION = "oidc.disableEmailVerification"
+    OIDC_DISABLE_EMAIL_VERIFICATION = "oidc.disableEmailVerification",
+    OIDC_NAME_CLAIM = "oidc.nameClaim",
+    OIDC_USERNAME_CLAIM = "oidc.usernameClaim"
 }
 
 type Transformer<T> = (val: string | null, shouldMask?: boolean) => T;
@@ -54,7 +59,10 @@ const transformers: Record<ConfigKey, Transformer<unknown>> = {
     "smtp.pass": maskableStringTransformer,
     "smtp.from": stringTransformer,
     "smtp.fromName": stringTransformer,
+    "smtp.useTls": booleanTransformer,
+    "smtp.ignoreCertCheck": booleanTransformer,
     "claims.showName": booleanTransformer,
+    "claims.showNameAcrossGroups": booleanTransformer,
     "claims.showForOwner": booleanTransformer,
     "claims.requireEmail": booleanTransformer,
     listMode: stringTransformer,
@@ -71,7 +79,9 @@ const transformers: Record<ConfigKey, Transformer<unknown>> = {
     "oidc.autoRedirect": booleanTransformer,
     "oidc.autoRegister": booleanTransformer,
     "oidc.enableSync": booleanTransformer,
-    "oidc.disableEmailVerification": booleanTransformer
+    "oidc.disableEmailVerification": booleanTransformer,
+    "oidc.nameClaim": stringTransformer,
+    "oidc.usernameClaim": stringTransformer
 };
 
 const getDefaultConfig = (): Config => ({
@@ -81,10 +91,13 @@ const getDefaultConfig = (): Config => ({
         method: "approval"
     },
     smtp: {
-        enable: false
+        enable: false,
+        useTls: false,
+        ignoreCertCheck: false
     },
     claims: {
         showName: true,
+        showNameAcrossGroups: false,
         showForOwner: false,
         requireEmail: true
     },

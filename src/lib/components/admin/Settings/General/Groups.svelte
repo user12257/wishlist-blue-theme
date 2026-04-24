@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Group } from "@prisma/client";
+    import type { Group } from "$lib/generated/prisma/client";
     import SettingsGroup from "../SettingsGroup.svelte";
     import Setting from "../Setting.svelte";
     import { getFormatter } from "$lib/i18n";
@@ -15,15 +15,15 @@
 
 <SettingsGroup title={$t("admin.groups")}>
     <Setting>
-        <label class="flex flex-col" for="defaultGroup">
+        <label class="label flex flex-col" for="defaultGroup">
             <span>{$t("admin.default-group")}</span>
             <select
                 id="defaultGroup"
                 name="defaultGroup"
-                class="select w-fit min-w-64"
+                class="select w-full max-w-fit"
                 value={config.defaultGroup || ""}
             >
-                <option value="">{$t("admin.select-a-group-option")}</option>
+                <option class="truncate" value="">{$t("admin.select-a-group-option")}</option>
                 {#each groups as group}
                     <option value={group.id}>{group.name}</option>
                 {/each}

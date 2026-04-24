@@ -4,7 +4,7 @@ import { getConfig } from "$lib/server/config";
 import { getFormatter } from "$lib/server/i18n";
 import { getById, getItems, type GetItemsOptions } from "$lib/server/list";
 import { getActiveMembership } from "$lib/server/group-membership";
-import type { UserGroupMembership } from "@prisma/client";
+import type { UserGroupMembership } from "$lib/generated/prisma/client";
 
 export const load = (async ({ params, url, locals, depends, cookies }) => {
     const $t = await getFormatter();
@@ -72,6 +72,7 @@ export const load = (async ({ params, url, locals, depends, cookies }) => {
             : undefined,
         listMode: config.listMode,
         showClaimedName: config.claims.showName,
+        showNameAcrossGroups: config.claims.showNameAcrossGroups,
         showClaimForOwner: config.claims.showForOwner,
         requireClaimEmail: config.claims.requireEmail,
         suggestionsEnabled: config.suggestions.enable,
